@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management with GitHub API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        p {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Management</h1>
+
+        <!-- Registration Section -->
+        <h3>Create New User</h3>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <select id="subscription">
+            <option value="Subscription 1">Subscription 1</option>
+            <option value="Subscription 2">Subscription 2</option>
+            <option value="Subscription 3">Subscription 3</option>
+            <option value="Subscription 4">Subscription 4</option>
+            <option value="Subscription 5">Subscription 5</option>
+            <option value="Subscription 6">Subscription 6</option>
+        </select>
+        <button id="register-btn">Register New User</button>
+
+        <!-- Key Generation Section -->
+        <h3>Generate Keys</h3>
+        <select id="key-subscription">
+            <option value="Subscription 1">Subscription 1</option>
+            <option value="Subscription 2">Subscription 2</option>
+            <option value="Subscription 3">Subscription 3</option>
+            <option value="Subscription 4">Subscription 4</option>
+            <option value="Subscription 5">Subscription 5</option>
+            <option value="Subscription 6">Subscription 6</option>
+        </select>
+        <input type="number" id="key-count" placeholder="How many keys to generate?" min="1" max="10">
+        <button id="generate-keys-btn">Generate Keys</button>
+
+        <!-- Change Subscription for All Users Section -->
+        <h3>Change All Users Subscription</h3>
+        <select id="new-subscription">
+            <option value="Subscription 1">Subscription 1</option>
+            <option value="Subscription 2">Subscription 2</option>
+            <option value="Subscription 3">Subscription 3</option>
+            <option value="Subscription 4">Subscription 4</option>
+            <option value="Subscription 5">Subscription 5</option>
+            <option value="Subscription 6">Subscription 6</option>
+        </select>
+        <button id="change-all-subscription-btn">Change All Users Subscription</button>
+
+        <!-- Change Subscription for Specific User Section -->
+        <h3>Change Subscription for Specific User</h3>
+        <input type="text" id="change-username" placeholder="Enter Username">
+        <select id="user-subscription">
+            <option value="Subscription 1">Subscription 1</option>
+            <option value="Subscription 2">Subscription 2</option>
+            <option value="Subscription 3">Subscription 3</option>
+            <option value="Subscription 4">Subscription 4</option>
+            <option value="Subscription 5">Subscription 5</option>
+            <option value="Subscription 6">Subscription 6</option>
+        </select>
+        <button id="change-user-subscription-btn">Change User Subscription</button>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const githubRepoUrl = "https://api.github.com/repos/<username>/user-management/contents/users.json";
+        const personalAccessToken = "<your_github_pat>";
+
+        // Helper function to fetch users from GitHub
+        async function fetchUsers() {
+            const response = await fetch(githubRepoUrl, {
+                headers: {
+                    Authorization: token ${personalAccessToken},
+                    "User-Agent": "User-Management-App"
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const content = atob(data.content); // Decode base64
+                return JSON.parse(content);
+            } else {
+                console.error("Failed to fetch users:", response.statusText);
+                return [];
+            }
+        }
+
+        // Helper function to update users on GitHub
+        async function updateUsers(users) {
+            const currentFile = await fetch(githubRepoUrl, {
+                headers: {
+                    Authorization: token ${personalAccessToken},
+                    "User-Agent": "User-Management-App"
+                }
+            });
+
+            const fileData = await currentFile.json();
+            const sha = fileData.sha;
+            const updatedContent = btoa(JSON.stringify(users, null, 2)); // Encode base64
+
+            const response = await fetch(githubRepoUrl, {
+                method: "PUT",
+                headers: {
+                    Authorization: token ${personalAccessToken},
+                    "Content-Type": "application/json",
+                    "User-Agent": "User-Management-App"
+                },
+                body: JSON.stringify({
+                    message: "Update users.json",
+                    content: updatedContent,
+                    sha: sha
+                })
+            });
+
+            if (response.ok) {
+                console.log("Users updated successfully.");
+                return true;
+            } else {
+                console.error("Failed to update users:", response.statusText);
+                return false;
+            }
+        }
+
+        // Register New User
+        async function registerUser() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const subscription = document.getElementById("subscription").value;
+
+            if (!username || !password || !subscription) {
+                document.getElementById("message").innerText = "Please fill in all fields!";
+                return;
+            }
+
+            const users = await fetchUsers();
+            if (users.find(u => u.username === username)) {
+                document.getElementById("message").innerText = "Username already exists!";
+                return;
+            }
+
+            const key = Math.random().toString(36).substring(2, 10); // Generate a unique key
+            users.push({ username, password, subscription, key });
+
+            if (await updateUsers(users)) {
+                document.getElementById("message").innerText = User registered successfully! Your key: ${key};
+            } else {
+                document.getElementById("message").innerText = "Failed to register user!";
+            }
+        }
+
+        // Generate Keys for Subscription
+        async function generateKeys() {
+            const subscription = document.getElementById("key-subscription").value;
+            const count = parseInt(document.getElementById("key-count").value);
+
+            if (isNaN(count) || count < 1) {
+                document.getElementById("message").innerText = "Please enter a valid number of keys!";
+                return;
+            }
+
+            const keys = [];
+            for (let i = 0; i < count; i++) {
+                keys.push(Math.random().toString(36).substring(2, 10));
+            }
+
+            document.getElementById("message").innerText = Generated keys: ${keys.join(", ")};
+        }
+
+        // Change Subscription for All Users
+        async function changeAllUsersSubscription() {
+            const newSubscription = document.getElementById("new-subscription").value;
+
+            const users = await fetchUsers();
+            users.forEach(user => {
+                user.subscription = newSubscription;
+            });
+
+            if (await updateUsers(users)) {
+                document.getElementById("message").innerText = All users' subscription changed to ${newSubscription};
+            } else {
+                document.getElementById("message").innerText = "Failed to update users' subscriptions!";
+            }
+        }
+
+        // Change Subscription for Specific User
+        async function changeUserSubscription() {
+            const username = document.getElementById("change-username").value;
+            const newSubscription = document.getElementById("user-subscription").value;
+
+            const users = await fetchUsers();
+            const user = users.find(u => u.username === username);
+
+            if (user) {
+                user.subscription = newSubscription;
+                if (await updateUsers(users)) {
+                    document.getElementById("message").innerText = ${username}'s subscription changed to ${newSubscription};
+                } else {
+                    document.getElementById("message").innerText = "Failed to update user subscription!";
+                }
+            } else {
+                document.getElementById("message").innerText = "User not found!";
+            }
+        }
+
+        // Button Event Listeners
+        document.getElementById("register-btn").addEventListener("click", registerUser);
+        document.getElementById("generate-keys-btn").addEventListener("click", generateKeys);
+        document.getElementById("change-all-subscription-btn").addEventListener("click", changeAllUsersSubscription);
+        document.getElementById("change-user-subscription-btn").addEventListener("click", changeUserSubscription);
+    </script>
+</body>
+</html>
