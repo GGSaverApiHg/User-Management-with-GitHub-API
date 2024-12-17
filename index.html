@@ -3,254 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management with GitHub API</title>
+    <title>User Management System</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+        :root {
+            --primary-bg: #121212;
+            --card-bg: #1E1E1E;
+            --button-primary: #2563eb;
+            --button-hover: #1d4ed8;
+            --button-danger: #dc2626;
+            --button-danger-hover: #b91c1c;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --border-color: #333333;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
         .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
         input, select {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 1rem;
         }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--button-primary);
+            border-color: transparent;
+        }
+
         button {
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
             border: none;
-            border-radius: 4px;
+            border-radius: 0.375rem;
+            background: var(--button-primary);
+            color: white;
+            font-size: 1rem;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
+
         button:hover {
-            background: #0056b3;
+            background: var(--button-hover);
         }
-        p {
-            color: red;
-            font-weight: bold;
+
+        button.danger {
+            background: var(--button-danger);
+        }
+
+        button.danger:hover {
+            background: var(--button-danger-hover);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .success {
+            border-left: 4px solid #10B981;
+        }
+
+        .error {
+            border-left: 4px solid #EF4444;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>User Management</h1>
+        <!-- Create User Card -->
+        <div class="card">
+            <h2>Create New User</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <input type="text" id="hwid" placeholder="HWID (Auto-filled)" readonly>
+            <select id="subscription">
+                <option value="Supreme-Essential-Legit">Supreme-Essential-Legit</option>
+                <option value="Supreme-Essential">Supreme-Essential</option>
+                <option value="Supreme">Supreme</option>
+                <option value="Essential">Essential</option>
+                <option value="Essential-Legit">Essential-Legit</option>
+                <option value="Supreme-Legit">Supreme-Legit</option>
+                <option value="Legit">Legit</option>
+            </select>
+            <input type="date" id="expireDate" placeholder="Expiration Date">
+            <button id="register-btn">Register New User</button>
+        </div>
 
-        <!-- Registration Section -->
-        <h3>Create New User</h3>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <select id="subscription">
-            <option value="Subscription 1">Subscription 1</option>
-            <option value="Subscription 2">Subscription 2</option>
-            <option value="Subscription 3">Subscription 3</option>
-            <option value="Subscription 4">Subscription 4</option>
-            <option value="Subscription 5">Subscription 5</option>
-            <option value="Subscription 6">Subscription 6</option>
-        </select>
-        <button id="register-btn">Register New User</button>
+        <!-- Change All Users Subscription -->
+        <div class="card">
+            <h2>Change All Users Subscription</h2>
+            <select id="new-subscription">
+                <option value="Supreme-Essential-Legit">Supreme-Essential-Legit</option>
+                <option value="Supreme-Essential">Supreme-Essential</option>
+                <option value="Supreme">Supreme</option>
+                <option value="Essential">Essential</option>
+                <option value="Essential-Legit">Essential-Legit</option>
+                <option value="Supreme-Legit">Supreme-Legit</option>
+                <option value="Legit">Legit</option>
+            </select>
+            <button id="change-all-subscription-btn">Change All Users Subscription</button>
+        </div>
 
-        <!-- Key Generation Section -->
-        <h3>Generate Keys</h3>
-        <select id="key-subscription">
-            <option value="Subscription 1">Subscription 1</option>
-            <option value="Subscription 2">Subscription 2</option>
-            <option value="Subscription 3">Subscription 3</option>
-            <option value="Subscription 4">Subscription 4</option>
-            <option value="Subscription 5">Subscription 5</option>
-            <option value="Subscription 6">Subscription 6</option>
-        </select>
-        <input type="number" id="key-count" placeholder="How many keys to generate?" min="1" max="10">
-        <button id="generate-keys-btn">Generate Keys</button>
+        <!-- Change User Subscription -->
+        <div class="card">
+            <h2>Change User Subscription</h2>
+            <input type="text" id="change-username" placeholder="Enter Username">
+            <select id="user-subscription">
+                <option value="Supreme-Essential-Legit">Supreme-Essential-Legit</option>
+                <option value="Supreme-Essential">Supreme-Essential</option>
+                <option value="Supreme">Supreme</option>
+                <option value="Essential">Essential</option>
+                <option value="Essential-Legit">Essential-Legit</option>
+                <option value="Supreme-Legit">Supreme-Legit</option>
+                <option value="Legit">Legit</option>
+            </select>
+            <button id="change-user-subscription-btn">Change User Subscription</button>
+        </div>
 
-        <!-- Change Subscription for All Users Section -->
-        <h3>Change All Users Subscription</h3>
-        <select id="new-subscription">
-            <option value="Subscription 1">Subscription 1</option>
-            <option value="Subscription 2">Subscription 2</option>
-            <option value="Subscription 3">Subscription 3</option>
-            <option value="Subscription 4">Subscription 4</option>
-            <option value="Subscription 5">Subscription 5</option>
-            <option value="Subscription 6">Subscription 6</option>
-        </select>
-        <button id="change-all-subscription-btn">Change All Users Subscription</button>
+        <!-- HWID Reset -->
+        <div class="card">
+            <h2>Reset User HWID</h2>
+            <input type="text" id="reset-hwid-username" placeholder="Enter Username">
+            <button id="reset-hwid-btn">Reset HWID</button>
+        </div>
 
-        <!-- Change Subscription for Specific User Section -->
-        <h3>Change Subscription for Specific User</h3>
-        <input type="text" id="change-username" placeholder="Enter Username">
-        <select id="user-subscription">
-            <option value="Subscription 1">Subscription 1</option>
-            <option value="Subscription 2">Subscription 2</option>
-            <option value="Subscription 3">Subscription 3</option>
-            <option value="Subscription 4">Subscription 4</option>
-            <option value="Subscription 5">Subscription 5</option>
-            <option value="Subscription 6">Subscription 6</option>
-        </select>
-        <button id="change-user-subscription-btn">Change User Subscription</button>
+        <!-- Reset All HWIDs -->
+        <div class="card">
+            <h2>Reset All HWIDs</h2>
+            <button id="reset-all-hwids-btn" class="danger">Reset All HWIDs</button>
+        </div>
 
-        <p id="message"></p>
+        <!-- Version Update -->
+        <div class="card">
+            <h2>Update Version</h2>
+            <button id="version-update-btn">Check for Version Update</button>
+            <div id="version-info"></div>
+        </div>
     </div>
 
+    <div id="toast" class="toast"></div>
+
     <script>
-        const githubRepoUrl = "https://api.github.com/repos/GGSaverApiHg/datalogin/contents/users.json";
-        const personalAccessToken = "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";
-
-        // Helper function to fetch users from GitHub
+        const githubRepoUrl = "https://api.github.com/repos/GGSaverApiHg/user-management/contents/users.json";
+        const versionUrl = "https://api.github.com/repos/GGSaverApiHg/user-management/contents/version.json";
+        const personalAccessToken = "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";
+    
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;  // Correct class assignment
+            toast.style.display = 'block';
+    
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    
+        // Fetch users from GitHub
         async function fetchUsers() {
-            const response = await fetch(githubRepoUrl, {
-                headers: {
-                    Authorization: token ${personalAccessToken},
-                    "User-Agent": "User-Management-App"
+            try {
+                const response = await fetch(githubRepoUrl, {
+                    headers: {
+                        Authorization: `token ${personalAccessToken}`, // Correct token format
+                        "User-Agent": "User-Management-App"
+                    }
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    const content = atob(data.content);
+                    return JSON.parse(content);
                 }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const content = atob(data.content); // Decode base64
-                return JSON.parse(content);
-            } else {
-                console.error("Failed to fetch users:", response.statusText);
+                throw new Error("Failed to fetch users");
+            } catch (error) {
+                console.error("Error fetching users:", error);
                 return [];
             }
         }
-
-        // Helper function to update users on GitHub
+    
+        // Update users on GitHub
         async function updateUsers(users) {
-            const currentFile = await fetch(githubRepoUrl, {
-                headers: {
-                    Authorization: token ${personalAccessToken},
-                    "User-Agent": "User-Management-App"
-                }
-            });
-
-            const fileData = await currentFile.json();
-            const sha = fileData.sha;
-            const updatedContent = btoa(JSON.stringify(users, null, 2)); // Encode base64
-
-            const response = await fetch(githubRepoUrl, {
-                method: "PUT",
-                headers: {
-                    Authorization: token ${personalAccessToken},
-                    "Content-Type": "application/json",
-                    "User-Agent": "User-Management-App"
-                },
-                body: JSON.stringify({
-                    message: "Update users.json",
-                    content: updatedContent,
-                    sha: sha
-                })
-            });
-
-            if (response.ok) {
-                console.log("Users updated successfully.");
+            try {
+                const currentFile = await fetch(githubRepoUrl, {
+                    headers: {
+                        Authorization: `token ${personalAccessToken}`, // Correct token format
+                        "User-Agent": "User-Management-App"
+                    }
+                });
+    
+                const fileData = await currentFile.json();
+                const sha = fileData.sha;
+                const updatedContent = btoa(JSON.stringify(users, null, 2));
+    
+                const response = await fetch(githubRepoUrl, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `token ${personalAccessToken}`, // Correct token format
+                        "Content-Type": "application/json",
+                        "User-Agent": "User-Management-App"
+                    },
+                    body: JSON.stringify({
+                        message: "Update users.json",
+                        content: updatedContent,
+                        sha: sha
+                    })
+                });
+    
+                if (!response.ok) throw new Error("Failed to update users");
                 return true;
-            } else {
-                console.error("Failed to update users:", response.statusText);
+            } catch (error) {
+                console.error("Error updating users:", error);
                 return false;
             }
         }
-
-        // Register New User
+    
+        // Fetch version from GitHub
+        async function fetchVersion() {
+            try {
+                const response = await fetch(versionUrl, {
+                    headers: {
+                        Authorization: `token ${personalAccessToken}`, // Correct token format
+                        "User-Agent": "User-Management-App"
+                    }
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    const versionData = atob(data.content);
+                    const version = JSON.parse(versionData);
+                    document.getElementById('version-info').textContent = `Current Version: ${version.version}`; // Correct string template
+                } else {
+                    throw new Error("Failed to fetch version");
+                }
+            } catch (error) {
+                console.error("Error fetching version:", error);
+            }
+        }
+    
+        // Register new user
         async function registerUser() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
+            const hwid = document.getElementById("hwid").value;
             const subscription = document.getElementById("subscription").value;
-
-            if (!username || !password || !subscription) {
-                document.getElementById("message").innerText = "Please fill in all fields!";
+            const expireDate = document.getElementById("expireDate").value;
+    
+            if (!username || !password || !subscription || !expireDate) {
+                showToast("Please fill in all fields!", "error");
                 return;
             }
-
+    
             const users = await fetchUsers();
             if (users.find(u => u.username === username)) {
-                document.getElementById("message").innerText = "Username already exists!";
+                showToast("Username already exists!", "error");
                 return;
             }
-
-            const key = Math.random().toString(36).substring(2, 10); // Generate a unique key
-            users.push({ username, password, subscription, key });
-
-            if (await updateUsers(users)) {
-                document.getElementById("message").innerText = User registered successfully! Your key: ${key};
+    
+            const key = Math.random().toString(36).substring(2, 10);
+            const newUser = { username, password, subscription, hwid: "", expireDate, key };
+    
+            users.push(newUser);
+            const success = await updateUsers(users);
+    
+            if (success) {
+                showToast("User registered successfully!");
+                document.getElementById("username").value = "";
+                document.getElementById("password").value = "";
+                document.getElementById("expireDate").value = "";
             } else {
-                document.getElementById("message").innerText = "Failed to register user!";
+                showToast("Failed to register user!", "error");
             }
         }
-
-        // Generate Keys for Subscription
-        async function generateKeys() {
-            const subscription = document.getElementById("key-subscription").value;
-            const count = parseInt(document.getElementById("key-count").value);
-
-            if (isNaN(count) || count < 1) {
-                document.getElementById("message").innerText = "Please enter a valid number of keys!";
+    
+        // Reset specific user's HWID
+        async function resetHWID() {
+            const username = document.getElementById("reset-hwid-username").value;
+    
+            if (!username) {
+                showToast("Please enter a username!", "error");
                 return;
             }
-
-            const keys = [];
-            for (let i = 0; i < count; i++) {
-                keys.push(Math.random().toString(36).substring(2, 10));
-            }
-
-            document.getElementById("message").innerText = Generated keys: ${keys.join(", ")};
-        }
-
-        // Change Subscription for All Users
-        async function changeAllUsersSubscription() {
-            const newSubscription = document.getElementById("new-subscription").value;
-
+    
             const users = await fetchUsers();
-            users.forEach(user => {
-                user.subscription = newSubscription;
-            });
-
-            if (await updateUsers(users)) {
-                document.getElementById("message").innerText = All users' subscription changed to ${newSubscription};
+            const userIndex = users.findIndex(u => u.username === username);
+    
+            if (userIndex === -1) {
+                showToast("User not found!", "error");
+                return;
+            }
+    
+            users[userIndex].hwid = "";
+            const success = await updateUsers(users);
+    
+            if (success) {
+                showToast("HWID reset successfully!");
+                document.getElementById("reset-hwid-username").value = "";
             } else {
-                document.getElementById("message").innerText = "Failed to update users' subscriptions!";
+                showToast("Failed to reset HWID!", "error");
             }
         }
-
-        // Change Subscription for Specific User
-        async function changeUserSubscription() {
-            const username = document.getElementById("change-username").value;
-            const newSubscription = document.getElementById("user-subscription").value;
-
-            const users = await fetchUsers();
-            const user = users.find(u => u.username === username);
-
-            if (user) {
-                user.subscription = newSubscription;
-                if (await updateUsers(users)) {
-                    document.getElementById("message").innerText = ${username}'s subscription changed to ${newSubscription};
+    
+        // Reset all users' HWIDs
+        async function resetAllHWIDs() {
+            try {
+                const users = await fetchUsers();
+                const updatedUsers = users.map(user => ({
+                    ...user,
+                    hwid: ""
+                }));
+    
+                const success = await updateUsers(updatedUsers);
+    
+                if (success) {
+                    showToast("All HWIDs reset successfully!");
                 } else {
-                    document.getElementById("message").innerText = "Failed to update user subscription!";
+                    showToast("Failed to reset HWIDs!", "error");
                 }
-            } else {
-                document.getElementById("message").innerText = "User not found!";
+            } catch (error) {
+                console.error("Error resetting all HWIDs:", error);
+                showToast("Failed to reset HWIDs!", "error");
             }
         }
-
-        // Button Event Listeners
+    
+        // Event listeners
         document.getElementById("register-btn").addEventListener("click", registerUser);
-        document.getElementById("generate-keys-btn").addEventListener("click", generateKeys);
-        document.getElementById("change-all-subscription-btn").addEventListener("click", changeAllUsersSubscription);
-        document.getElementById("change-user-subscription-btn").addEventListener("click", changeUserSubscription);
+        document.getElementById("reset-hwid-btn").addEventListener("click", resetHWID);
+        document.getElementById("reset-all-hwids-btn").addEventListener("click", resetAllHWIDs);
+        document.getElementById("version-update-btn").addEventListener("click", fetchVersion);
     </script>
+    
 </body>
 </html>
